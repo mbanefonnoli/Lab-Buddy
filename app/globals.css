@@ -1,26 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-pale-mint: #F0FFF9;
+  --color-deep-mint: #A7D7C5;
+  --color-magic-orange: #FF7E47;
+  --color-soft-purple: #9B86BD;
+  --color-buddy-blue: #4A90E2;
+  --color-text-main: #3D4E5B;
+
+  --font-bubbly: var(--font-fredoka), sans-serif;
+
+  --radius-blob: 35% 65% 60% 40% / 40% 45% 55% 60%;
+  --radius-super-round: 3rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply font-bubbly bg-pale-mint text-text-main antialiased;
+    -webkit-tap-highlight-color: transparent;
+    min-height: max(884px, 100dvh);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .material-symbols-outlined {
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 48;
+  }
+
+  .dashed-border {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='60' ry='60' stroke='%23A7D7C5' stroke-width='8' stroke-dasharray='16%2c 20' stroke-linecap='round'/%3e%3c/svg%3e");
+    border-radius: 60px;
+  }
 }
