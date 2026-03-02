@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import CircularProgress from "@/components/CircularProgress";
 import TrendChart from "@/components/TrendChart";
-import {
-  loadHistory,
-  buildTrendSeries,
-  deleteFromHistory,
-  type StoredResult,
-} from "@/lib/storage";
+import HealthSnapshot from "@/components/HealthSnapshot";
+import { buildTrendSeries, type StoredResult } from "@/lib/storage";
+import { useHistory } from "@/lib/useHistory";
 
 /* ── helpers ─────────────────────────────────────── */
 
@@ -30,38 +25,6 @@ function healthScore(entry: StoredResult) {
   return Math.round(
     (entry.result.values.filter((v) => v.status === "normal").length / total) * 100
   );
-}
-
-/* Derive up to 3 biomarker ring values from the latest entry */
-function getRings(entry: StoredResult) {
-  const statusPct: Record<string, number> = {
-    normal: 100,
-    high: 72,
-    low: 38,
-    critical: 18,
-  };
-  const tracked = [
-    { key: "hemoglobin", label: "Hemoglobin", color: "#8B5CF6" },
-    { key: "glucose", label: "Glucose", color: "#F97316" },
-    { key: "cholesterol", label: "Cholesterol", color: "#3B82F6" },
-    { key: "creatinine", label: "Creatinine", color: "#EC4899" },
-    { key: "vitamin", label: "Vitamin D", color: "#10B981" },
-    { key: "iron", label: "Iron", color: "#6366F1" },
-  ];
-  const rings: { label: string; value: number; color: string; status: string }[] = [];
-  for (const t of tracked) {
-    if (rings.length >= 3) break;
-    const v = entry.result.values.find((v) => v.name.toLowerCase().includes(t.key));
-    if (v) {
-      rings.push({
-        label: t.label,
-        value: statusPct[v.status] ?? 100,
-        color: t.color,
-        status: v.status,
-      });
-    }
-  }
-  return rings;
 }
 
 /* ── DEMO data shown when localStorage is empty ───── */
@@ -99,34 +62,19 @@ const DEMO_HISTORY: StoredResult[] = [
 /* ── Component ───────────────────────────────────── */
 
 export default function DashboardOverview() {
-  const [history, setHistory] = useState<StoredResult[]>(() => {
-    if (typeof window !== "undefined") {
-      return loadHistory();
-    }
-    return [];
-  });
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReady(true);
-  }, []);
+  const { history, remove, isLoading } = useHistory();
 
   const isDemo = history.length === 0;
   const displayHistory = isDemo ? DEMO_HISTORY : history;
   const latest = displayHistory[0];
   const score = healthScore(latest);
-  const rings = getRings(latest);
   const { labels, series } = buildTrendSeries(displayHistory);
   const badge = statusBadge(latest);
   const recentUploads = displayHistory.slice(0, 4);
 
-  const handleDelete = (id: string) => {
-    deleteFromHistory(id);
-    setHistory(loadHistory());
-  };
+  const handleDelete = (id: string) => remove(id);
 
-  if (!ready) return null;
+  if (isLoading) return null;
 
   return (
     <div className="space-y-6">
@@ -146,10 +94,10 @@ export default function DashboardOverview() {
       </div>
 
       {/* Bento grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
-        {/* ── Welcome / last analysis card ── */}
-        <div className="flex flex-col justify-between rounded-3xl bg-white p-6 shadow-sm md:col-span-2 xl:col-span-1">
+        {/* ── Welcome / CTA card (narrow) ── */}
+        <div className="flex flex-col justify-between rounded-3xl bg-white p-6 shadow-sm">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-text-main/30">
               Last Analysis
@@ -162,15 +110,12 @@ export default function DashboardOverview() {
               })}
             </p>
           </div>
-
-          {/* Score ring */}
-          <div className="my-6 flex flex-col items-center gap-3">
-            <CircularProgress percentage={score} color="#3BADA8" size={120} value={`${score}%`} label="Normal" />
-            <span className={`rounded-full px-4 py-1 text-xs font-black ${badge.color}`}>
-              {badge.label}
-            </span>
+          <div className="my-4 flex-1 flex items-center justify-center">
+            <div className="rounded-2xl bg-pale-mint px-5 py-4 text-center">
+              <p className="text-3xl font-black text-deep-mint">{score}%</p>
+              <p className="text-xs font-bold text-text-main/40 mt-0.5">values normal</p>
+            </div>
           </div>
-
           <Link
             href="/app"
             className="flex items-center justify-center gap-2 rounded-2xl bg-magic-orange px-4 py-3 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
@@ -180,37 +125,16 @@ export default function DashboardOverview() {
           </Link>
         </div>
 
-        {/* ── Health Snapshot rings ── */}
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
+        {/* ── Health Snapshot (wide) ── */}
+        <div className="rounded-3xl bg-white p-6 shadow-sm md:col-span-2">
           <p className="mb-4 text-xs font-black uppercase tracking-widest text-text-main/30">
             Health Snapshot
           </p>
-          {rings.length > 0 ? (
-            <div className="flex flex-col gap-5">
-              {rings.map((r) => (
-                <div key={r.label} className="flex items-center gap-4">
-                  <CircularProgress percentage={r.value} color={r.color} size={64} value="" label="" />
-                  <div>
-                    <p className="text-sm font-bold text-text-main">{r.label}</p>
-                    <p
-                      className="text-xs font-semibold capitalize"
-                      style={{ color: r.color }}
-                    >
-                      {r.status}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-text-main/40">
-              No tracked biomarkers found. Run an analysis to see your snapshot.
-            </p>
-          )}
+          <HealthSnapshot values={latest.result.values} />
         </div>
 
-        {/* ── Trend chart ── (full-width on xl) */}
-        <div className="rounded-3xl bg-white p-6 shadow-sm md:col-span-2 xl:col-span-3">
+        {/* ── Trend chart (full-width) ── */}
+        <div className="rounded-3xl bg-white p-6 shadow-sm md:col-span-3">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-xs font-black uppercase tracking-widest text-text-main/30">
               Health Trends

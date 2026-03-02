@@ -1,5 +1,6 @@
-import Link from "next/link";
 import NavBar from "@/components/NavBar";
+import UserMenu from "@/components/UserMenu";
+import ProfileSwitcher from "@/components/ProfileSwitcher";
 
 export default function AppLayout({
   children,
@@ -20,16 +21,10 @@ export default function AppLayout({
             Lab Buddy
           </span>
         </div>
-        <Link
-          href="/dashboard"
-          className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 shadow-sm text-sm font-black text-text-main dark:bg-zinc-900 hover:bg-pale-mint transition-colors"
-          aria-label="Dashboard"
-        >
-          <span className="material-symbols-outlined text-deep-mint text-lg leading-none">
-            dashboard
-          </span>
-          <span className="hidden sm:inline">Dashboard</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ProfileSwitcher />
+          <UserMenu />
+        </div>
       </header>
 
       {/* Page content */}

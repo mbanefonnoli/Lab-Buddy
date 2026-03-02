@@ -1,46 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import ResultsPanel from "@/components/ResultsPanel";
-import type { ExplainResponse } from "@/types/lab";
-
-const STORAGE_KEY = "labbuddy_last_result";
-
-interface SavedResult {
-  result: ExplainResponse;
-  analyzedAt: string;
-}
+import { useHistory } from "@/lib/useHistory";
+import ExportPDFButton from "@/components/ExportPDFButton";
+import DoctorSummaryButton from "@/components/DoctorSummaryButton";
 
 export default function ResultsPage() {
   const { t, locale } = useLanguage();
   const r = t.resultsPage;
-  const [saved, setSaved] = useState<SavedResult | null>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
-      } catch {
-        return null;
-      }
-    }
-    return null;
-  });
-  const [ready, setReady] = useState(false);
+  const { history, remove, isLoading } = useHistory();
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReady(true);
-  }, []);
+  if (isLoading) return null;
 
-  const handleClear = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setSaved(null);
-  };
-
-  // Avoid flash of empty state before localStorage is read
-  if (!ready) return null;
+  const saved = history[0] ?? null;
 
   if (saved) {
     const date = new Date(saved.analyzedAt).toLocaleString(locale, {
@@ -61,6 +35,8 @@ export default function ResultsPage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <ExportPDFButton entry={saved} />
+            <DoctorSummaryButton entry={saved} />
             <Link
               href="/"
               className="flex items-center gap-1.5 rounded-2xl bg-magic-orange px-4 py-2 text-xs font-black uppercase tracking-wider text-white shadow-[0_3px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
@@ -69,7 +45,7 @@ export default function ResultsPage() {
               {r.analyzeNew}
             </Link>
             <button
-              onClick={handleClear}
+              onClick={() => remove(saved.id)}
               className="flex h-8 w-8 items-center justify-center rounded-2xl bg-white text-zinc-400 shadow-sm transition-all hover:bg-red-50 hover:text-red-400 active:scale-95 dark:bg-zinc-800 dark:text-zinc-500"
               aria-label={r.clearResult}
               title={r.clearResult}

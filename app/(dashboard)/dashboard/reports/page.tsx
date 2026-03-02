@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { loadHistory, deleteFromHistory, type StoredResult } from "@/lib/storage";
+import { type StoredResult } from "@/lib/storage";
+import { useHistory } from "@/lib/useHistory";
+import ExportPDFButton from "@/components/ExportPDFButton";
+import DoctorSummaryButton from "@/components/DoctorSummaryButton";
 
 function statusBadge(entry: StoredResult) {
   const total = entry.result.values.length;
@@ -23,27 +26,15 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function ReportsPage() {
-  const [history, setHistory] = useState<StoredResult[]>(() => {
-    if (typeof window !== "undefined") {
-      return loadHistory();
-    }
-    return [];
-  });
+  const { history, remove, isLoading } = useHistory();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReady(true);
-  }, []);
 
   const handleDelete = (id: string) => {
-    deleteFromHistory(id);
-    setHistory(loadHistory());
+    remove(id);
     if (expanded === id) setExpanded(null);
   };
 
-  if (!ready) return null;
+  if (isLoading) return null;
 
   return (
     <div className="space-y-6">
@@ -186,14 +177,18 @@ export default function ReportsPage() {
                     ))}
                   </div>
 
-                  {/* Delete */}
-                  <button
-                    onClick={() => handleDelete(entry.id)}
-                    className="mt-4 flex items-center gap-1.5 rounded-xl bg-rose-50 px-4 py-2 text-xs font-black text-rose-400 transition-all hover:bg-rose-100"
-                  >
-                    <span className="material-symbols-outlined text-base">delete</span>
-                    Delete Report
-                  </button>
+                  {/* Actions */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <ExportPDFButton entry={entry} />
+                    <DoctorSummaryButton entry={entry} />
+                    <button
+                      onClick={() => handleDelete(entry.id)}
+                      className="flex items-center gap-1.5 rounded-xl bg-rose-50 px-4 py-2 text-xs font-black text-rose-400 transition-all hover:bg-rose-100"
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                      Delete
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

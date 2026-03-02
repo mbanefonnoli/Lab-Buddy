@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { TrendSeries } from "@/lib/storage";
 
 interface TrendChartProps {
@@ -29,6 +30,21 @@ export default function TrendChart({
   isDemo,
   height = 220,
 }: TrendChartProps) {
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+
+  const toggle = (name: string) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      const visibleCount = series.filter((s) => !next.has(s.name)).length;
+      if (next.has(name)) {
+        next.delete(name);
+      } else if (visibleCount > 1) {
+        next.add(name);
+      }
+      return next;
+    });
+
+  const visible = series.filter((s) => !hidden.has(s.name));
   const n = labels.length;
   const H = height;
 
@@ -83,7 +99,7 @@ export default function TrendChart({
         ))}
 
         {/* Area fills (behind lines) */}
-        {series.map((s) => {
+        {visible.map((s) => {
           const pts = s.values
             .map((v, i) =>
               v !== null ? { x: xOf(i, n, W), y: yOf(v, H) } : null
@@ -100,7 +116,7 @@ export default function TrendChart({
         })}
 
         {/* Lines */}
-        {series.map((s) => {
+        {visible.map((s) => {
           const pts = s.values
             .map((v, i) =>
               v !== null ? { x: xOf(i, n, W), y: yOf(v, H) } : null
@@ -124,7 +140,7 @@ export default function TrendChart({
         })}
 
         {/* 3D sphere data points */}
-        {series.map((s) =>
+        {visible.map((s) =>
           s.values.map((v, i) => {
             if (v === null) return null;
             const cx = xOf(i, n, W);
@@ -143,20 +159,52 @@ export default function TrendChart({
         )}
       </svg>
 
-      {/* Legend */}
-      <div className="mt-2 flex flex-wrap gap-4 px-1">
-        {series.map((s) => (
-          <div key={s.name} className="flex items-center gap-1.5">
-            <div
-              className="h-2 w-5 rounded-full"
-              style={{ background: s.color }}
-            />
-            <span className="text-[11px] font-bold text-text-main/50">
+      {/* Legend — clickable biomarker selector */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
+        {series.map((s) => {
+          const isHidden = hidden.has(s.name);
+          return (
+            <button
+              key={s.name}
+              onClick={() => toggle(s.name)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold transition-all ${isHidden
+                  ? "bg-[#F5F7FA] text-text-main/25 line-through"
+                  : "bg-[#F5F7FA] text-text-main/60 hover:opacity-75"
+                }`}
+              aria-pressed={!isHidden}
+              title={isHidden ? `Show ${s.name}` : `Hide ${s.name}`}
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ background: s.color, opacity: isHidden ? 0.25 : 1 }}
+              />
               {s.name}
-            </span>
-          </div>
-        ))}
+            </button>
+          );
+        })}
+
+        {series.length > 2 && (
+          <button
+            onClick={() => setHidden(new Set(series.slice(1).map(s => s.name)))}
+            className="text-[10px] font-black uppercase tracking-widest text-magic-orange hover:opacity-70 ml-1"
+          >
+            Clear All
+          </button>
+        )}
+        {hidden.size > 0 && (
+          <button
+            onClick={() => setHidden(new Set())}
+            className="text-[10px] font-black uppercase tracking-widest text-deep-mint hover:opacity-70 ml-1"
+          >
+            Show All
+          </button>
+        )}
       </div>
+      {series.length > 1 && (
+        <p className="mt-1 px-1 text-[9px] font-medium text-text-main/25">
+          Tap a biomarker to show / hide it
+        </p>
+      )}
     </div>
   );
 }

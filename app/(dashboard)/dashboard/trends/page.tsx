@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import TrendChart from "@/components/TrendChart";
-import { loadHistory, buildTrendSeries, type StoredResult } from "@/lib/storage";
+import { buildTrendSeries, type StoredResult } from "@/lib/storage";
+import { useHistory } from "@/lib/useHistory";
 
 const DEMO_HISTORY: StoredResult[] = Array.from({ length: 5 }, (_, i) => ({
   id: `demo-${i}`,
@@ -42,20 +42,9 @@ function InsightCard({ icon, label, value, sub, color }: { icon: string; label: 
 }
 
 export default function TrendsPage() {
-  const [history] = useState<StoredResult[]>(() => {
-    if (typeof window !== "undefined") {
-      return loadHistory();
-    }
-    return [];
-  });
-  const [ready, setReady] = useState(false);
+  const { history, isLoading } = useHistory();
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReady(true);
-  }, []);
-
-  if (!ready) return null;
+  if (isLoading) return null;
 
   const isDemo = history.length === 0;
   const displayHistory = isDemo ? DEMO_HISTORY : history;

@@ -7,6 +7,8 @@ export interface StoredResult {
   id: string;
   result: ExplainResponse;
   analyzedAt: string;
+  /** Optional profile this result belongs to */
+  profileId?: string;
 }
 
 export interface TrendSeries {
@@ -27,7 +29,7 @@ export function loadHistory(): StoredResult[] {
   }
 }
 
-export function saveToHistory(result: ExplainResponse): StoredResult {
+export function saveToHistory(result: ExplainResponse, profileId?: string): StoredResult {
   const entry: StoredResult = {
     id:
       typeof crypto !== "undefined" && crypto.randomUUID
@@ -35,6 +37,7 @@ export function saveToHistory(result: ExplainResponse): StoredResult {
         : Date.now().toString(),
     result,
     analyzedAt: new Date().toISOString(),
+    ...(profileId ? { profileId } : {}),
   };
   const history = [entry, ...loadHistory()].slice(0, MAX_HISTORY);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
@@ -88,9 +91,7 @@ export function buildTrendSeries(history: StoredResult[]): {
 } {
   if (history.length < 1) return { labels: [], series: [] };
 
-  // Show oldest → newest (left to right)
   const sorted = [...history].reverse();
-
   const labels = sorted.map((e) =>
     new Date(e.analyzedAt).toLocaleDateString(undefined, {
       month: "short",
@@ -98,7 +99,7 @@ export function buildTrendSeries(history: StoredResult[]): {
     })
   );
 
-  // Main line: overall health score (% of normal values)
+  // 1. Health Score Series
   const healthScores: number[] = sorted.map((e) => {
     const total = e.result.values.length;
     if (total === 0) return 100;
@@ -110,19 +111,34 @@ export function buildTrendSeries(history: StoredResult[]): {
     { name: "Health Score", color: "#3BADA8", values: healthScores },
   ];
 
-  // Add biomarker lines (max 2 extra)
-  let added = 0;
-  for (const tracked of TRACKED) {
-    if (added >= 2) break;
+  // 2. Extract ALL unique biomarkers found in history
+  const allNames = new Set<string>();
+  for (const entry of history) {
+    for (const v of entry.result.values) {
+      allNames.add(v.name);
+    }
+  }
+
+  // 3. Define colors for biomarkers
+  const colors = ["#8B5CF6", "#F97316", "#3B82F6", "#EC4899", "#10B981", "#6366F1", "#F43F5E", "#84CC16"];
+  let colorIdx = 0;
+
+  // 4. Build a series for each biomarker found
+  for (const name of Array.from(allNames)) {
     const values: (number | null)[] = sorted.map((e) => {
-      const v = e.result.values.find((v) =>
-        v.name.toLowerCase().includes(tracked.key)
-      );
+      const v = e.result.values.find((val) => val.name === name);
       return v ? statusToNorm(v.status) : null;
     });
-    if (values.some((v) => v !== null)) {
-      series.push({ name: tracked.name, color: tracked.color, values });
-      added++;
+
+    // Only add if it appears in at least 2 reports OR is a major biomarker
+    const appearsIn = values.filter((v) => v !== null).length;
+    if (appearsIn >= 2 || TRACKED.some(t => name.toLowerCase().includes(t.key))) {
+      series.push({
+        name,
+        color: colors[colorIdx % colors.length],
+        values
+      });
+      colorIdx++;
     }
   }
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { LabValue, LabValueStatus } from "@/types/lab";
 import { useLanguage } from "@/components/LanguageProvider";
+import ReferenceRangeSlider from "@/components/ReferenceRangeSlider";
 
 const STATUS_STYLES: Record<
   LabValueStatus,
@@ -128,6 +129,11 @@ export default function LabValueCard({ value }: LabValueCardProps) {
           )}
         </div>
       </div>
+
+      {/* Reference Range Slider */}
+      {value.referenceRange && (
+        <ReferenceRangeSlider labValue={value} />
+      )}
 
       {/* Explanation Box */}
       <div className={`mt-auto rounded-3xl p-5 ${styles.bg} dark:bg-zinc-800/40 relative overflow-hidden`}>

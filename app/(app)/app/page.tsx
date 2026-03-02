@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import InputPanel from "@/components/InputPanel";
 import ResultsPanel from "@/components/ResultsPanel";
 import { useLanguage } from "@/components/LanguageProvider";
-import { saveToHistory } from "@/lib/storage";
+import { useHistory } from "@/lib/useHistory";
 import type { ExplainResponse } from "@/types/lab";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -16,6 +16,7 @@ export default function Home() {
   const [lastText, setLastText] = useState("");
   const resultsRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
+  const { save: saveToHistory } = useHistory();
 
   const analyze = async (text: string) => {
     setLastText(text);

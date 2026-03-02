@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Fredoka } from "next/font/google";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import { AuthProvider } from "@/components/AuthProvider";
+import { ProfileProvider } from "@/components/ProfileProvider";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -22,10 +24,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
       <body className={`${fredoka.variable} font-bubbly antialiased bg-pale-mint`}>
-        <LanguageProvider>
-          {children}
-        </LanguageProvider>
+        <AuthProvider>
+          <ProfileProvider>
+            <LanguageProvider>
+              {children}
+            </LanguageProvider>
+          </ProfileProvider>
+        </AuthProvider>
       </body>
     </html>
   );

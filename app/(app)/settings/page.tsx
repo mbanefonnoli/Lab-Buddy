@@ -4,12 +4,41 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { LANGUAGES, type Locale } from "@/lib/i18n";
+import { useProfile } from "@/components/ProfileProvider";
+import { RELATION_LABELS, AVATAR_COLORS, type ProfileRelation } from "@/types/profile";
 
 const NOTIF_KEY = "labbuddy_notifications";
+
+function ProfileAvatar({ name, color, size = 36 }: { name: string; color: string; size?: number }) {
+  const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <div
+      className="flex shrink-0 items-center justify-center rounded-full font-black text-white"
+      style={{ width: size, height: size, background: color, fontSize: size * 0.36 }}
+    >
+      {initials}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { locale, setLocale, t } = useLanguage();
   const s = t.settingsPage;
+  const { profiles, activeProfile, setActive, addProfile, removeProfile } = useProfile();
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newRelation, setNewRelation] = useState<ProfileRelation>("partner");
+  const [newColor, setNewColor] = useState(AVATAR_COLORS[1]);
+
+  const handleAddProfile = () => {
+    if (!newName.trim()) return;
+    addProfile(newName.trim(), newRelation, newColor);
+    setNewName("");
+    setNewRelation("partner");
+    setNewColor(AVATAR_COLORS[1]);
+    setShowAddForm(false);
+  };
 
   const [notificationsOn, setNotificationsOn] = useState(() => {
     if (typeof window !== "undefined") {
@@ -198,6 +227,112 @@ export default function SettingsPage() {
             <span className="material-symbols-outlined text-lg">chevron_right</span>
           </div>
         </Link>
+      </div>
+
+      {/* Family Profiles card */}
+      <div className="mb-6 overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 shadow-[0_8px_20px_rgba(0,0,0,0.04)] dark:bg-zinc-900/60 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-pale-mint dark:border-zinc-800">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-pale-mint dark:bg-zinc-800">
+              <span className="material-symbols-outlined text-xl text-magic-orange">group</span>
+            </div>
+            <span className="text-base font-bold text-text-main dark:text-zinc-100">Family Profiles</span>
+          </div>
+          <button
+            onClick={() => setShowAddForm((v) => !v)}
+            className="flex items-center gap-1 rounded-xl bg-pale-mint px-3 py-1.5 text-xs font-black text-deep-mint transition-all hover:bg-deep-mint hover:text-white"
+          >
+            <span className="material-symbols-outlined text-base">add</span>
+            Add
+          </button>
+        </div>
+
+        {/* Existing profiles */}
+        <div className="divide-y divide-pale-mint dark:divide-zinc-800">
+          {profiles.map((p) => (
+            <div key={p.id} className="flex items-center gap-3 px-6 py-4">
+              <ProfileAvatar name={p.name} color={p.avatarColor} />
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-bold text-text-main dark:text-zinc-100">{p.name}</p>
+                <p className="text-[10px] font-medium text-text-main/40">{RELATION_LABELS[p.relation]}</p>
+              </div>
+              {p.id === activeProfile.id ? (
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-600">Active</span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setActive(p.id)}
+                    className="rounded-xl bg-pale-mint px-3 py-1 text-[10px] font-black text-deep-mint hover:bg-deep-mint hover:text-white transition-all"
+                  >
+                    Switch
+                  </button>
+                  <button
+                    onClick={() => removeProfile(p.id)}
+                    className="flex h-7 w-7 items-center justify-center rounded-xl bg-rose-50 text-rose-400 hover:bg-rose-100 transition-all"
+                    aria-label={`Remove ${p.name}`}
+                  >
+                    <span className="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Add profile form */}
+        {showAddForm && (
+          <div className="border-t border-pale-mint dark:border-zinc-800 bg-pale-mint/20 dark:bg-zinc-800/20 px-6 py-5 space-y-4">
+            <p className="text-xs font-black uppercase tracking-widest text-text-main/40">New Profile</p>
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Name (e.g. Mom, John)"
+              className="w-full rounded-2xl border-2 border-pale-mint bg-white px-4 py-2.5 text-sm font-bold text-text-main placeholder:text-text-main/30 outline-none focus:border-deep-mint dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+            />
+            <div className="flex flex-wrap gap-2">
+              {(Object.entries(RELATION_LABELS) as [ProfileRelation, string][]).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setNewRelation(val)}
+                  className={`rounded-full px-3 py-1 text-xs font-bold transition-all ${
+                    newRelation === val
+                      ? "bg-deep-mint text-white"
+                      : "bg-white text-text-main/60 hover:bg-pale-mint dark:bg-zinc-800 dark:text-zinc-400"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-text-main/40">Color</span>
+              {AVATAR_COLORS.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setNewColor(c)}
+                  className={`h-6 w-6 rounded-full transition-all ${newColor === c ? "ring-2 ring-offset-2 ring-text-main/40 scale-110" : ""}`}
+                  style={{ background: c }}
+                  aria-label={`Color ${c}`}
+                />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAddProfile}
+                disabled={!newName.trim()}
+                className="flex-1 rounded-2xl bg-magic-orange py-2.5 text-sm font-black text-white shadow-[0_3px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none disabled:opacity-40"
+              >
+                Add Profile
+              </button>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-text-main/50 hover:bg-pale-mint transition-all dark:bg-zinc-800"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* About card */}
