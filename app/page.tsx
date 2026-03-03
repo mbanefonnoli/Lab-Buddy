@@ -86,6 +86,31 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen overflow-x-hidden">
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          25%       { transform: scale(1.45) rotate(22deg); }
+          55%       { transform: scale(0.75) rotate(-12deg); }
+          78%       { transform: scale(1.25) rotate(10deg); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50%       { transform: translateY(-8px) rotate(5deg); }
+        }
+        @keyframes draw-line-loop {
+          0%   { stroke-dashoffset: 210; opacity: 0; }
+          8%   { stroke-dashoffset: 210; opacity: 1; }
+          55%  { stroke-dashoffset: 0;   opacity: 1; }
+          82%  { stroke-dashoffset: 0;   opacity: 1; }
+          99%  { stroke-dashoffset: 0;   opacity: 0; }
+          100% { stroke-dashoffset: 210; opacity: 0; }
+        }
+        @keyframes word-pulse {
+          0%, 100% { transform: scale(1)    skewX(0deg); }
+          40%      { transform: scale(1.05) skewX(-1deg); }
+          70%      { transform: scale(0.98) skewX(0.5deg); }
+        }
+      `}</style>
 
       {/* ════════════════ MARKETING NAV ════════════════ */}
       <header
@@ -159,7 +184,7 @@ export default function LandingPage() {
 
             <h1 className="mb-4 text-5xl font-black leading-[1.1] tracking-tight text-text-main sm:text-6xl">
               Your Health Story,{" "}
-              <span className="relative inline-block text-magic-orange">
+              <span className="relative inline-block text-magic-orange" style={{ animation: "word-pulse 2.5s ease-in-out infinite" }}>
                 Simplified!
                 <svg
                   className="absolute -bottom-2 left-0 w-full"
@@ -172,6 +197,9 @@ export default function LandingPage() {
                     stroke="#F97316"
                     strokeWidth="3"
                     strokeLinecap="round"
+                    strokeDasharray="210"
+                    strokeDashoffset="210"
+                    style={{ animation: "draw-line-loop 3.5s ease-in-out infinite" }}
                   />
                 </svg>
               </span>
@@ -213,13 +241,13 @@ export default function LandingPage() {
                   </span>
                 </div>
                 {/* Stethoscope badge */}
-                <div className="absolute -bottom-3 -right-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
+                <div className="absolute -bottom-3 -right-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-[0_8px_20px_rgba(0,0,0,0.10)]" style={{ animation: "float 3.5s ease-in-out infinite" }}>
                   <span className="material-symbols-outlined text-deep-mint text-[30px]">
                     stethoscope
                   </span>
                 </div>
                 {/* Sparkle accent */}
-                <div className="absolute -left-4 -top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-magic-orange/10">
+                <div className="absolute -left-4 -top-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-magic-orange/10" style={{ animation: "twinkle 3s ease-in-out infinite" }}>
                   <span className="material-symbols-outlined text-magic-orange text-xl">auto_awesome</span>
                 </div>
               </div>
@@ -266,7 +294,7 @@ export default function LandingPage() {
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className={`flex flex-col justify-between overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 p-7 shadow-[0_8px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] ${f.span}`}
+              className={`flex flex-col justify-between overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 p-7 shadow-[0_8px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_28px_56px_rgba(0,0,0,0.13)] hover:z-10 ${f.span}`}
             >
               <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${f.bg}`}>
                 <span className={`material-symbols-outlined text-2xl ${f.color}`}>{f.icon}</span>
@@ -308,7 +336,7 @@ export default function LandingPage() {
           {STEPS.map((step, i) => (
             <div
               key={step.label}
-              className="relative flex flex-col items-center rounded-[2.5rem] border-4 border-white bg-white/80 p-8 text-center shadow-[0_8px_20px_rgba(0,0,0,0.04)]"
+              className="relative flex flex-col items-center rounded-[2.5rem] border-4 border-white bg-white/80 p-8 text-center shadow-[0_8px_20px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-3 hover:scale-[1.04] hover:shadow-[0_28px_56px_rgba(0,0,0,0.13)] hover:z-10"
             >
               {/* Step number bubble */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md">
