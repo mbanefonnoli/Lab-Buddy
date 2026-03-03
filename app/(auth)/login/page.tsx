@@ -27,7 +27,7 @@ export default function LoginPage() {
     if (tab === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setError(error.message);
+        setError("Invalid login. Please check your email and password.");
         setLoading(false);
       } else {
         router.push("/app");

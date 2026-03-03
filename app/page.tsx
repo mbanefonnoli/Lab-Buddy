@@ -366,8 +366,15 @@ export default function LandingPage() {
 
         <div className="mx-auto max-w-sm">
           <div className="relative overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/90 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
-            <div className="absolute right-6 top-6 rounded-full bg-deep-mint px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
-              Always Free
+            <div className="group absolute right-6 top-6 cursor-default">
+              <div className="rounded-full bg-deep-mint px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+                Always Free
+              </div>
+              {/* Tooltip */}
+              <div className="pointer-events-none absolute right-0 top-full mt-2 w-44 rounded-2xl bg-text-main px-3 py-2 text-center text-[11px] font-semibold leading-snug text-white opacity-0 shadow-lg transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1">
+                🎉 Free for now — we may introduce a Pro plan later
+                <div className="absolute -top-1.5 right-4 h-3 w-3 rotate-45 bg-text-main" />
+              </div>
             </div>
 
             <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-magic-orange/10">
