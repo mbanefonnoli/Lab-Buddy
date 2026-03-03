@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import Link from "next/link";
 
 export default function DashboardLayout({
   children,
@@ -22,9 +23,8 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-30 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <DashboardSidebar onClose={() => setSidebarOpen(false)} />
       </div>
@@ -40,7 +40,9 @@ export default function DashboardLayout({
           >
             <span className="material-symbols-outlined text-xl">menu</span>
           </button>
-          <span className="text-lg font-black text-text-main">Lab Buddy</span>
+          <Link href="/" className="text-lg font-black text-text-main transition-transform active:scale-95">
+            Lab Buddy
+          </Link>
         </header>
 
         {/* Scrollable content */}
