@@ -6,16 +6,18 @@ import { type StoredResult } from "@/lib/storage";
 import { useHistory } from "@/lib/useHistory";
 import ExportPDFButton from "@/components/ExportPDFButton";
 import DoctorSummaryButton from "@/components/DoctorSummaryButton";
+import { useLanguage } from "@/components/LanguageProvider";
+import type { Translations } from "@/lib/i18n";
 
-function statusBadge(entry: StoredResult) {
+function statusBadge(entry: StoredResult, sb: Translations["dashboard"]["statusBadge"]) {
   const total = entry.result.values.length;
-  if (total === 0) return { label: "No Data", color: "bg-zinc-100 text-zinc-400" };
+  if (total === 0) return { label: sb.noData, color: "bg-zinc-100 text-zinc-400" };
   const normal = entry.result.values.filter((v) => v.status === "normal").length;
   const pct = (normal / total) * 100;
-  if (pct === 100) return { label: "Everything Great!", color: "bg-emerald-100 text-emerald-600" };
-  if (pct >= 75) return { label: "Mostly Good", color: "bg-sky-100 text-sky-600" };
-  if (pct >= 50) return { label: "Heads Up!", color: "bg-amber-100 text-amber-600" };
-  return { label: "Needs Attention", color: "bg-rose-100 text-rose-600" };
+  if (pct === 100) return { label: sb.everythingGreat, color: "bg-emerald-100 text-emerald-600" };
+  if (pct >= 75) return { label: sb.mostlyGood, color: "bg-sky-100 text-sky-600" };
+  if (pct >= 50) return { label: sb.headsUp, color: "bg-amber-100 text-amber-600" };
+  return { label: sb.needsAttention, color: "bg-rose-100 text-rose-600" };
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -27,6 +29,8 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default function ReportsPage() {
   const { history, remove, isLoading } = useHistory();
+  const { t } = useLanguage();
+  const r = t.reportsPage;
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const handleDelete = (id: string) => {
@@ -41,11 +45,9 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-text-main">My Reports</h1>
+          <h1 className="text-2xl font-black text-text-main">{r.myReports}</h1>
           <p className="text-sm font-medium text-text-main/40">
-            {history.length === 0
-              ? "No analyses yet"
-              : `${history.length} saved report${history.length !== 1 ? "s" : ""}`}
+            {history.length === 0 ? r.noAnalysesYet : r.savedReports(history.length)}
           </p>
         </div>
         <Link
@@ -53,7 +55,7 @@ export default function ReportsPage() {
           className="flex items-center gap-2 rounded-2xl bg-magic-orange px-5 py-2.5 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
         >
           <span className="material-symbols-outlined text-base">add</span>
-          New Analysis
+          {r.newAnalysis}
         </Link>
       </div>
 
@@ -68,12 +70,12 @@ export default function ReportsPage() {
               folder_open
             </span>
           </div>
-          <p className="text-sm font-bold text-text-main/40">No reports yet</p>
+          <p className="text-sm font-bold text-text-main/40">{r.noReportsYet}</p>
           <Link
             href="/app"
             className="rounded-2xl bg-magic-orange px-6 py-2.5 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105"
           >
-            Run your first analysis
+            {r.runFirstAnalysis}
           </Link>
         </div>
       )}
@@ -81,7 +83,7 @@ export default function ReportsPage() {
       {/* Report list */}
       <div className="space-y-3">
         {history.map((entry) => {
-          const b = statusBadge(entry);
+          const b = statusBadge(entry, t.dashboard.statusBadge);
           const total = entry.result.values.length;
           const normal = entry.result.values.filter((v) => v.status === "normal").length;
           const isOpen = expanded === entry.id;
@@ -118,7 +120,7 @@ export default function ReportsPage() {
                     })}
                   </p>
                   <p className="text-xs font-medium text-text-main/40">
-                    {total} value{total !== 1 ? "s" : ""} · {normal} normal · {score}% health score
+                    {r.valuesText(total, normal, score)}
                   </p>
                 </div>
 
@@ -186,7 +188,7 @@ export default function ReportsPage() {
                       className="flex items-center gap-1.5 rounded-xl bg-rose-50 px-4 py-2 text-xs font-black text-rose-400 transition-all hover:bg-rose-100"
                     >
                       <span className="material-symbols-outlined text-base">delete</span>
-                      Delete
+                      {r.delete}
                     </button>
                   </div>
                 </div>

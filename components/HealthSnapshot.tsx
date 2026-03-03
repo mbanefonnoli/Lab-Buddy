@@ -1,14 +1,15 @@
 "use client";
 
 import type { LabValue, LabValueStatus } from "@/types/lab";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const STATUS_ORDER: LabValueStatus[] = ["critical", "high", "low", "normal"];
 
-const STATUS_STYLES: Record<LabValueStatus, { dot: string; badge: string; label: string }> = {
-  normal:   { dot: "bg-emerald-400",  badge: "bg-emerald-50 text-emerald-600",  label: "Normal"   },
-  high:     { dot: "bg-amber-400",    badge: "bg-amber-50 text-amber-600",      label: "High"     },
-  low:      { dot: "bg-violet-400",   badge: "bg-violet-50 text-violet-600",    label: "Low"      },
-  critical: { dot: "bg-rose-500",     badge: "bg-rose-50 text-rose-600",        label: "Critical" },
+const STATUS_DOT_BADGE: Record<LabValueStatus, { dot: string; badge: string }> = {
+  normal:   { dot: "bg-emerald-400",  badge: "bg-emerald-50 text-emerald-600"  },
+  high:     { dot: "bg-amber-400",    badge: "bg-amber-50 text-amber-600"      },
+  low:      { dot: "bg-violet-400",   badge: "bg-violet-50 text-violet-600"    },
+  critical: { dot: "bg-rose-500",     badge: "bg-rose-50 text-rose-600"        },
 };
 
 interface HealthSnapshotProps {
@@ -55,9 +56,12 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 export default function HealthSnapshot({ values }: HealthSnapshotProps) {
+  const { t } = useLanguage();
+  const hs = t.healthSnapshot;
+
   if (values.length === 0) {
     return (
-      <p className="text-sm text-text-main/40">No data available.</p>
+      <p className="text-sm text-text-main/40">{hs.noData}</p>
     );
   }
 
@@ -81,10 +85,10 @@ export default function HealthSnapshot({ values }: HealthSnapshotProps) {
             </span>
             <div>
               <p className="text-xs font-black text-emerald-600">
-                {normal.length} Optimized
+                {hs.optimized(normal.length)}
               </p>
               <p className="text-[10px] font-medium text-emerald-500/70">
-                Within normal range
+                {hs.withinRange}
               </p>
             </div>
           </div>
@@ -99,10 +103,10 @@ export default function HealthSnapshot({ values }: HealthSnapshotProps) {
               </span>
               <div>
                 <p className="text-xs font-black text-amber-600">
-                  {flagged.length} Need{flagged.length !== 1 ? "s" : ""} Attention
+                  {hs.needsAttention(flagged.length)}
                 </p>
                 <p className="text-[10px] font-medium text-amber-500/70">
-                  Outside normal range
+                  {hs.outsideRange}
                 </p>
               </div>
             </div>
@@ -114,11 +118,11 @@ export default function HealthSnapshot({ values }: HealthSnapshotProps) {
       {flagged.length > 0 && (
         <div>
           <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-text-main/30">
-            Needs Attention
+            {hs.needsAttentionLabel}
           </p>
           <div className="space-y-1.5">
             {flagged.map((v) => {
-              const s = STATUS_STYLES[v.status];
+              const s = STATUS_DOT_BADGE[v.status];
               return (
                 <div
                   key={v.name}
@@ -133,7 +137,7 @@ export default function HealthSnapshot({ values }: HealthSnapshotProps) {
                     {v.unit ? ` ${v.unit}` : ""}
                   </span>
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${s.badge}`}>
-                    {s.label}
+                    {hs.statusLabels[v.status]}
                   </span>
                 </div>
               );
@@ -146,7 +150,7 @@ export default function HealthSnapshot({ values }: HealthSnapshotProps) {
       {normal.length > 0 && (
         <div>
           <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-text-main/30">
-            Optimized
+            {hs.optimizedLabel}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {normal.map((v) => (

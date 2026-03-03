@@ -4,6 +4,7 @@ import Link from "next/link";
 import TrendChart from "@/components/TrendChart";
 import { buildTrendSeries, type StoredResult } from "@/lib/storage";
 import { useHistory } from "@/lib/useHistory";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const DEMO_HISTORY: StoredResult[] = Array.from({ length: 5 }, (_, i) => ({
   id: `demo-${i}`,
@@ -43,6 +44,8 @@ function InsightCard({ icon, label, value, sub, color }: { icon: string; label: 
 
 export default function TrendsPage() {
   const { history, isLoading } = useHistory();
+  const { t } = useLanguage();
+  const tp = t.trendsPage;
 
   if (isLoading) return null;
 
@@ -60,16 +63,14 @@ export default function TrendsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-text-main">Health Trends</h1>
+          <h1 className="text-2xl font-black text-text-main">{tp.healthTrends}</h1>
           <p className="text-sm font-medium text-text-main/40">
-            {isDemo
-              ? "Showing sample data — run analyses over time to build your trend"
-              : `Based on ${displayHistory.length} report${displayHistory.length !== 1 ? "s" : ""}`}
+            {isDemo ? tp.showingSampleData : tp.basedOnReports(displayHistory.length)}
           </p>
         </div>
         {isDemo && (
           <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-600">
-            Sample Data
+            {tp.sampleData}
           </span>
         )}
       </div>
@@ -78,23 +79,23 @@ export default function TrendsPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <InsightCard
           icon="monitoring"
-          label="Latest Score"
+          label={tp.latestScore}
           value={`${latestScore}%`}
-          sub="of values in normal range"
+          sub={tp.ofValuesNormal}
           color="#3BADA8"
         />
         <InsightCard
           icon={trend >= 0 ? "trending_up" : "trending_down"}
-          label="Overall Trend"
+          label={tp.overallTrend}
           value={`${trend >= 0 ? "+" : ""}${trend}%`}
-          sub="since first report"
+          sub={tp.sinceFirstReport}
           color={trend >= 0 ? "#10B981" : "#F97316"}
         />
         <InsightCard
           icon="calendar_month"
-          label="Reports"
+          label={tp.reports}
           value={`${displayHistory.length}`}
-          sub="analyses tracked"
+          sub={tp.analysesTracked}
           color="#8B5CF6"
         />
       </div>
@@ -102,7 +103,7 @@ export default function TrendsPage() {
       {/* Full chart */}
       <div className="rounded-3xl bg-white p-6 shadow-sm">
         <p className="mb-6 text-xs font-black uppercase tracking-widest text-text-main/30">
-          All Biomarkers Over Time
+          {tp.allBiomarkers}
         </p>
         <TrendChart labels={labels} series={series} isDemo={isDemo} />
       </div>
@@ -111,9 +112,9 @@ export default function TrendsPage() {
       {history.length < 2 && (
         <div className="flex items-center justify-between rounded-3xl bg-pale-mint px-6 py-5">
           <div>
-            <p className="text-sm font-black text-text-main">Build your trend line</p>
+            <p className="text-sm font-black text-text-main">{tp.buildTrendLine}</p>
             <p className="text-xs font-medium text-text-main/50 mt-0.5">
-              Run at least 2 analyses to see real trends
+              {tp.runAtLeast2}
             </p>
           </div>
           <Link
@@ -121,7 +122,7 @@ export default function TrendsPage() {
             className="flex items-center gap-2 rounded-2xl bg-magic-orange px-5 py-2.5 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
           >
             <span className="material-symbols-outlined text-base">add</span>
-            New Analysis
+            {tp.newAnalysis}
           </Link>
         </div>
       )}

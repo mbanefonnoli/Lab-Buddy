@@ -11,6 +11,7 @@ export default function NavBar() {
   const NAV_ITEMS = [
     { href: "/app", label: t.nav.home, icon: "home" },
     { href: "/results", label: t.nav.results, icon: "analytics" },
+    { href: "/encyclopedia", label: t.nav.explore, icon: "menu_book" },
     { href: "/chat", label: t.nav.chat, icon: "chat_bubble" },
     { href: "/settings", label: t.nav.settings, icon: "settings" },
   ];

@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import type { StoredResult } from "@/lib/storage";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function ExportPDFButton({ entry }: { entry: StoredResult }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -27,7 +29,7 @@ export default function ExportPDFButton({ entry }: { entry: StoredResult }) {
       ) : (
         <span className="material-symbols-outlined text-base">picture_as_pdf</span>
       )}
-      {loading ? "Generating…" : "Export PDF"}
+      {loading ? t.exportButtons.generating : t.exportButtons.exportPDF}
     </button>
   );
 }

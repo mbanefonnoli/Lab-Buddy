@@ -1,0 +1,50 @@
+{
+  "name": "Lab Buddy",
+  "short_name": "Lab Buddy",
+  "description": "Paste or upload a medical lab report and get a plain-English explanation of every value.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8F5F3",
+  "theme_color": "#3BADA8",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["health", "medical", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Analyze Report",
+      "url": "/app",
+      "description": "Paste or upload a lab report"
+    },
+    {
+      "name": "My Dashboard",
+      "url": "/dashboard",
+      "description": "View your saved reports"
+    },
+    {
+      "name": "Lab Encyclopedia",
+      "url": "/encyclopedia",
+      "description": "Browse biomarker explanations"
+    }
+  ]
+}

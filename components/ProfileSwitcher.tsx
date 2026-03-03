@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
-import { RELATION_LABELS } from "@/types/profile";
+import { useLanguage } from "@/components/LanguageProvider";
 
 function Avatar({
   name,
@@ -31,6 +31,7 @@ function Avatar({
 
 export default function ProfileSwitcher() {
   const { profiles, activeProfile, setActive } = useProfile();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   if (profiles.length <= 1) return null; // only show when there are multiple profiles
@@ -40,7 +41,7 @@ export default function ProfileSwitcher() {
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 rounded-2xl bg-white px-3 py-1.5 shadow-sm transition-all hover:shadow-md"
-        aria-label="Switch profile"
+        aria-label={t.settingsPage.switchProfile}
       >
         <Avatar name={activeProfile.name} color={activeProfile.avatarColor} size={28} />
         <span className="max-w-[96px] truncate text-sm font-bold text-text-main">
@@ -74,7 +75,7 @@ export default function ProfileSwitcher() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-text-main">{p.name}</p>
                   <p className="text-[10px] font-medium text-text-main/40">
-                    {RELATION_LABELS[p.relation]}
+                    {t.profileRelations[p.relation]}
                   </p>
                 </div>
                 {p.id === activeProfile.id && (

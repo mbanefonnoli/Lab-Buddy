@@ -4,9 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function UserMenu() {
   const { user, signOut, isLoading } = useAuth();
+  const { t } = useLanguage();
+  const um = t.userMenu;
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -38,7 +41,7 @@ export default function UserMenu() {
         <span className="material-symbols-outlined text-deep-mint text-lg leading-none">
           login
         </span>
-        <span className="hidden sm:inline">Sign In</span>
+        <span className="hidden sm:inline">{um.signIn}</span>
       </Link>
     );
   }
@@ -59,7 +62,7 @@ export default function UserMenu() {
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex h-9 w-9 items-center justify-center rounded-full bg-deep-mint text-sm font-black text-white shadow-sm hover:brightness-105 transition-all"
-        aria-label="User menu"
+        aria-label={um.signIn}
       >
         {initials}
       </button>
@@ -68,7 +71,7 @@ export default function UserMenu() {
         <div className="absolute right-0 top-11 z-50 min-w-[200px] rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/5">
           {/* Email */}
           <div className="px-3 py-2 border-b border-pale-mint mb-1">
-            <p className="text-[11px] font-bold text-text-main/40">Signed in as</p>
+            <p className="text-[11px] font-bold text-text-main/40">{um.signedInAs}</p>
             <p className="text-sm font-bold text-text-main truncate max-w-[180px]">
               {user.email}
             </p>
@@ -82,7 +85,7 @@ export default function UserMenu() {
             <span className="material-symbols-outlined text-lg text-deep-mint" style={{ fontVariationSettings: "'FILL' 1" }}>
               dashboard
             </span>
-            Dashboard
+            {um.dashboard}
           </Link>
 
           <Link
@@ -93,7 +96,7 @@ export default function UserMenu() {
             <span className="material-symbols-outlined text-lg text-text-main/50" style={{ fontVariationSettings: "'FILL' 1" }}>
               settings
             </span>
-            Settings
+            {um.settings}
           </Link>
 
           <button
@@ -101,7 +104,7 @@ export default function UserMenu() {
             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-bold text-rose-500 hover:bg-rose-50 transition-colors mt-1 border-t border-pale-mint pt-2"
           >
             <span className="material-symbols-outlined text-lg">logout</span>
-            Sign Out
+            {um.signOut}
           </button>
         </div>
       )}

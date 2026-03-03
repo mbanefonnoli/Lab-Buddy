@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { TrendSeries } from "@/lib/storage";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface TrendChartProps {
   labels: string[];
@@ -30,6 +31,8 @@ export default function TrendChart({
   isDemo,
   height = 220,
 }: TrendChartProps) {
+  const { t } = useLanguage();
+  const tc = t.trendChart;
   const [hidden, setHidden] = useState<Set<string>>(new Set());
 
   const toggle = (name: string) =>
@@ -52,7 +55,7 @@ export default function TrendChart({
     <div className="relative w-full">
       {isDemo && (
         <span className="absolute right-0 top-0 z-10 rounded-full bg-magic-orange/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider text-magic-orange">
-          Sample Data
+          {tc.sampleData}
         </span>
       )}
 
@@ -188,7 +191,7 @@ export default function TrendChart({
             onClick={() => setHidden(new Set(series.slice(1).map(s => s.name)))}
             className="text-[10px] font-black uppercase tracking-widest text-magic-orange hover:opacity-70 ml-1"
           >
-            Clear All
+            {tc.clearAll}
           </button>
         )}
         {hidden.size > 0 && (
@@ -196,13 +199,13 @@ export default function TrendChart({
             onClick={() => setHidden(new Set())}
             className="text-[10px] font-black uppercase tracking-widest text-deep-mint hover:opacity-70 ml-1"
           >
-            Show All
+            {tc.showAll}
           </button>
         )}
       </div>
       {series.length > 1 && (
         <p className="mt-1 px-1 text-[9px] font-medium text-text-main/25">
-          Tap a biomarker to show / hide it
+          {tc.tapHint}
         </p>
       )}
     </div>

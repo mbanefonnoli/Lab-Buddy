@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const NAV = [
-  { href: "/dashboard", label: "Overview", icon: "home_app_logo" },
-  { href: "/dashboard/reports", label: "My Reports", icon: "folder_open" },
-  { href: "/dashboard/trends", label: "Health Trends", icon: "show_chart" },
-  { href: "/settings", label: "Settings", icon: "settings" },
-];
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function DashboardSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
+  const d = t.dashboard;
+
+  const NAV = [
+    { href: "/dashboard", label: d.overview, icon: "home_app_logo" },
+    { href: "/dashboard/reports", label: t.reportsPage.myReports, icon: "folder_open" },
+    { href: "/dashboard/trends", label: t.trendsPage.healthTrends, icon: "show_chart" },
+    { href: "/encyclopedia", label: t.encyclopediaPage.title, icon: "menu_book" },
+    { href: "/settings", label: t.nav.settings, icon: "settings" },
+  ];
 
   return (
     <aside className="flex h-full w-60 flex-col border-r border-pale-mint bg-white">
@@ -30,7 +34,7 @@ export default function DashboardSidebar({ onClose }: { onClose?: () => void }) 
 
       {/* Section label */}
       <p className="px-6 pb-1 pt-4 text-[10px] font-black uppercase tracking-[0.18em] text-text-main/30">
-        Dashboard
+        {d.overview}
       </p>
 
       {/* Nav items */}
@@ -45,11 +49,10 @@ export default function DashboardSidebar({ onClose }: { onClose?: () => void }) 
               key={item.href}
               href={item.href}
               onClick={onClose}
-              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
-                isActive
+              className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${isActive
                   ? "bg-pale-mint text-deep-mint shadow-sm"
                   : "text-text-main/50 hover:bg-pale-mint/50 hover:text-text-main"
-              }`}
+                }`}
             >
               <span
                 className="material-symbols-outlined text-xl"
@@ -76,7 +79,7 @@ export default function DashboardSidebar({ onClose }: { onClose?: () => void }) 
           className="flex items-center justify-center gap-2 rounded-2xl bg-magic-orange px-4 py-3 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
         >
           <span className="material-symbols-outlined text-base">add</span>
-          New Analysis
+          {d.newAnalysis}
         </Link>
         <p className="mt-3 text-center text-[10px] font-medium text-text-main/30">
           Not medical advice

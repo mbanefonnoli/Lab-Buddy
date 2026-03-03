@@ -2,18 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useHistory } from "@/lib/useHistory";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
-
-const SUGGESTED = [
-  "What does it mean if my Glucose is high?",
-  "Can you explain what Hemoglobin measures?",
-  "Which of my values should I be most concerned about?",
-  "What lifestyle changes can help improve my results?",
-];
 
 function buildReportContext(historyEntry: { result: { values: { name: string; result: string; unit: string; referenceRange: string; status: string }[] } } | null): string {
   if (!historyEntry) return "";
@@ -69,14 +63,16 @@ function TypingIndicator() {
 
 export default function ChatPage() {
   const { history, isLoading } = useHistory();
+  const { t } = useLanguage();
+  const cp = t.chatPage;
+
+  const buildGreeting = (hasReport: boolean) =>
+    cp.greeting + " " + (hasReport ? cp.greetingWithReport : cp.greetingNoReport);
+
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content:
-        "Hey there! 👋 I'm Buddy, your friendly lab results guide. " +
-        (history.length > 0
-          ? "I can see your latest report — ask me anything about it!"
-          : "Paste or upload a lab report first, then ask me anything about the results!"),
+      content: buildGreeting(history.length > 0),
     },
   ]);
   const [input, setInput] = useState("");
@@ -90,11 +86,7 @@ export default function ChatPage() {
       setMessages([
         {
           role: "assistant",
-          content:
-            "Hey there! 👋 I'm Buddy, your friendly lab results guide. " +
-            (history.length > 0
-              ? "I can see your latest report — ask me anything about it!"
-              : "Paste or upload a lab report first, then ask me anything about the results!"),
+          content: buildGreeting(history.length > 0),
         },
       ]);
     }
@@ -140,8 +132,7 @@ export default function ChatPage() {
         ...prev,
         {
           role: "assistant",
-          content:
-            "Sorry, I ran into an issue. Please try again in a moment! 😅",
+          content: cp.errorMessage,
         },
       ]);
     } finally {
@@ -165,16 +156,16 @@ export default function ChatPage() {
           B
         </div>
         <div>
-          <h1 className="text-xl font-black text-text-main">Ask Buddy</h1>
+          <h1 className="text-xl font-black text-text-main">{cp.askBuddy}</h1>
           <p className="text-xs font-medium text-text-main/40">
             {history.length > 0
-              ? `Using your report from ${new Date(history[0].analyzedAt).toLocaleDateString()}`
-              : "No report loaded — general questions only"}
+              ? cp.usingReport(new Date(history[0].analyzedAt).toLocaleDateString())
+              : cp.noReportLoaded}
           </p>
         </div>
         {history.length > 0 && (
           <span className="ml-auto rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-600">
-            Report Loaded
+            {cp.reportLoaded}
           </span>
         )}
       </div>
@@ -191,7 +182,7 @@ export default function ChatPage() {
       {/* Suggested questions (shown only before user sends anything) */}
       {messages.length === 1 && !loading && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {SUGGESTED.map((q) => (
+          {cp.suggested.map((q) => (
             <button
               key={q}
               onClick={() => send(q)}
@@ -210,7 +201,7 @@ export default function ChatPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Ask Buddy anything about your results…"
+          placeholder={cp.inputPlaceholder}
           rows={1}
           disabled={loading}
           className="flex-1 resize-none bg-transparent px-3 py-2.5 text-sm font-medium text-text-main outline-none placeholder:text-text-main/30 disabled:opacity-50"
@@ -232,7 +223,7 @@ export default function ChatPage() {
       </div>
 
       <p className="mt-2 text-center text-[10px] font-medium text-text-main/25">
-        Buddy is not a medical professional · Not medical advice
+        {cp.notMedical}
       </p>
     </div>
   );

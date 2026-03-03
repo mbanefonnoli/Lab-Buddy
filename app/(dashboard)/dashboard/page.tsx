@@ -5,18 +5,20 @@ import TrendChart from "@/components/TrendChart";
 import HealthSnapshot from "@/components/HealthSnapshot";
 import { buildTrendSeries, type StoredResult } from "@/lib/storage";
 import { useHistory } from "@/lib/useHistory";
+import { useLanguage } from "@/components/LanguageProvider";
+import type { Translations } from "@/lib/i18n";
 
 /* ── helpers ─────────────────────────────────────── */
 
-function statusBadge(result: StoredResult) {
+function statusBadge(result: StoredResult, sb: Translations["dashboard"]["statusBadge"]) {
   const total = result.result.values.length;
-  if (total === 0) return { label: "No Data", color: "bg-zinc-100 text-zinc-400" };
+  if (total === 0) return { label: sb.noData, color: "bg-zinc-100 text-zinc-400" };
   const normal = result.result.values.filter((v) => v.status === "normal").length;
   const pct = (normal / total) * 100;
-  if (pct === 100) return { label: "Everything Great!", color: "bg-emerald-100 text-emerald-600" };
-  if (pct >= 75) return { label: "Mostly Good", color: "bg-sky-100 text-sky-600" };
-  if (pct >= 50) return { label: "Heads Up!", color: "bg-amber-100 text-amber-600" };
-  return { label: "Needs Attention", color: "bg-rose-100 text-rose-600" };
+  if (pct === 100) return { label: sb.everythingGreat, color: "bg-emerald-100 text-emerald-600" };
+  if (pct >= 75) return { label: sb.mostlyGood, color: "bg-sky-100 text-sky-600" };
+  if (pct >= 50) return { label: sb.headsUp, color: "bg-amber-100 text-amber-600" };
+  return { label: sb.needsAttention, color: "bg-rose-100 text-rose-600" };
 }
 
 function healthScore(entry: StoredResult) {
@@ -63,13 +65,15 @@ const DEMO_HISTORY: StoredResult[] = [
 
 export default function DashboardOverview() {
   const { history, remove, isLoading } = useHistory();
+  const { t } = useLanguage();
+  const d = t.dashboard;
 
   const isDemo = history.length === 0;
   const displayHistory = isDemo ? DEMO_HISTORY : history;
   const latest = displayHistory[0];
   const score = healthScore(latest);
   const { labels, series } = buildTrendSeries(displayHistory);
-  const badge = statusBadge(latest);
+  const badge = statusBadge(latest, d.statusBadge);
   const recentUploads = displayHistory.slice(0, 4);
 
   const handleDelete = (id: string) => remove(id);
@@ -81,14 +85,14 @@ export default function DashboardOverview() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-text-main">Overview</h1>
+          <h1 className="text-2xl font-black text-text-main">{d.overview}</h1>
           <p className="text-sm font-medium text-text-main/40">
-            {isDemo ? "Showing sample data — run an analysis to see real results" : "Your health at a glance"}
+            {isDemo ? d.showingSampleData : d.yourHealthAtGlance}
           </p>
         </div>
         {isDemo && (
           <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-600">
-            Sample Data
+            {d.sampleData}
           </span>
         )}
       </div>
@@ -100,7 +104,7 @@ export default function DashboardOverview() {
         <div className="flex flex-col justify-between rounded-3xl bg-white p-6 shadow-sm">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-text-main/30">
-              Last Analysis
+              {d.lastAnalysis}
             </p>
             <p className="mt-1 text-sm font-semibold text-text-main/60">
               {new Date(latest.analyzedAt).toLocaleDateString(undefined, {
@@ -113,7 +117,7 @@ export default function DashboardOverview() {
           <div className="my-4 flex-1 flex items-center justify-center">
             <div className="rounded-2xl bg-pale-mint px-5 py-4 text-center">
               <p className="text-3xl font-black text-deep-mint">{score}%</p>
-              <p className="text-xs font-bold text-text-main/40 mt-0.5">values normal</p>
+              <p className="text-xs font-bold text-text-main/40 mt-0.5">{d.valuesNormal}</p>
             </div>
           </div>
           <Link
@@ -121,14 +125,14 @@ export default function DashboardOverview() {
             className="flex items-center justify-center gap-2 rounded-2xl bg-magic-orange px-4 py-3 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
           >
             <span className="material-symbols-outlined text-base">add</span>
-            New Analysis
+            {d.newAnalysis}
           </Link>
         </div>
 
         {/* ── Health Snapshot (wide) ── */}
         <div className="rounded-3xl bg-white p-6 shadow-sm md:col-span-2">
           <p className="mb-4 text-xs font-black uppercase tracking-widest text-text-main/30">
-            Health Snapshot
+            {d.healthSnapshot}
           </p>
           <HealthSnapshot values={latest.result.values} />
         </div>
@@ -137,13 +141,13 @@ export default function DashboardOverview() {
         <div className="rounded-3xl bg-white p-6 shadow-sm md:col-span-3">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-xs font-black uppercase tracking-widest text-text-main/30">
-              Health Trends
+              {d.healthTrends}
             </p>
             <Link
               href="/dashboard/trends"
               className="text-xs font-bold text-deep-mint hover:underline"
             >
-              View full chart →
+              {d.viewFullChart}
             </Link>
           </div>
           <TrendChart labels={labels} series={series} isDemo={isDemo} />
@@ -154,19 +158,19 @@ export default function DashboardOverview() {
       <div>
         <div className="mb-3 flex items-center justify-between">
           <p className="text-xs font-black uppercase tracking-widest text-text-main/30">
-            Recent Uploads
+            {d.recentUploads}
           </p>
           <Link
             href="/dashboard/reports"
             className="text-xs font-bold text-deep-mint hover:underline"
           >
-            See all →
+            {d.seeAll}
           </Link>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {recentUploads.map((entry) => {
-            const b = statusBadge(entry);
+            const b = statusBadge(entry, d.statusBadge);
             const s = healthScore(entry);
             const total = entry.result.values.length;
             const normal = entry.result.values.filter((v) => v.status === "normal").length;
@@ -192,7 +196,7 @@ export default function DashboardOverview() {
                     })}
                   </p>
                   <p className="mt-0.5 text-sm font-bold text-text-main">
-                    {total} value{total !== 1 ? "s" : ""} · {normal} normal
+                    {total} {d.value}{total !== 1 ? "s" : ""} · {normal} {d.normal}
                   </p>
                 </div>
 

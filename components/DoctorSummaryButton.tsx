@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { StoredResult } from "@/lib/storage";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function DoctorSummaryButton({
   entry,
@@ -10,6 +11,7 @@ export default function DoctorSummaryButton({
   entry: StoredResult;
   patientName?: string;
 }) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
 
   const handleExport = async () => {
@@ -33,7 +35,7 @@ export default function DoctorSummaryButton({
       ) : (
         <span className="material-symbols-outlined text-base">medical_information</span>
       )}
-      {loading ? "Generating…" : "Doctor Summary"}
+      {loading ? t.exportButtons.generating : t.exportButtons.doctorSummary}
     </button>
   );
 }
