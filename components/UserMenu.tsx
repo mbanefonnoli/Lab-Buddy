@@ -47,9 +47,11 @@ export default function UserMenu() {
   }
 
   // Logged in: avatar chip + dropdown
-  const initials = user.email
-    ? user.email.slice(0, 2).toUpperCase()
-    : "LB";
+  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+  const fullName = user.user_metadata?.full_name as string | undefined;
+  const initials = fullName
+    ? fullName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()
+    : (user.email ? user.email.slice(0, 2).toUpperCase() : "LB");
 
   const handleSignOut = async () => {
     setOpen(false);
@@ -61,20 +63,31 @@ export default function UserMenu() {
     <div ref={menuRef} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-deep-mint text-sm font-black text-white shadow-sm hover:brightness-105 transition-all"
+        className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-deep-mint text-sm font-black text-white shadow-sm hover:brightness-105 transition-all"
         aria-label={um.signIn}
       >
-        {initials}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={initials} className="h-full w-full object-cover" />
+        ) : (
+          initials
+        )}
       </button>
 
       {open && (
         <div className="absolute right-0 top-11 z-50 min-w-[200px] rounded-2xl bg-white p-1.5 shadow-xl ring-1 ring-black/5">
-          {/* Email */}
-          <div className="px-3 py-2 border-b border-pale-mint mb-1">
-            <p className="text-[11px] font-bold text-text-main/40">{um.signedInAs}</p>
-            <p className="text-sm font-bold text-text-main truncate max-w-[180px]">
-              {user.email}
-            </p>
+          {/* Name + email */}
+          <div className="flex items-center gap-2.5 px-3 py-2 border-b border-pale-mint mb-1">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={initials} className="h-8 w-8 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-deep-mint text-xs font-black text-white">
+                {initials}
+              </div>
+            )}
+            <div className="min-w-0">
+              {fullName && <p className="truncate text-sm font-black text-text-main max-w-[150px]">{fullName}</p>}
+              <p className="text-[11px] font-bold text-text-main/40 truncate max-w-[150px]">{user.email}</p>
+            </div>
           </div>
 
           <Link

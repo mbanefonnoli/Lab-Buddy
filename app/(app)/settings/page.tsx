@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
 import { LANGUAGES, type Locale } from "@/lib/i18n";
 import { useProfile } from "@/components/ProfileProvider";
+import { useAuth } from "@/components/AuthProvider";
 import { AVATAR_COLORS, type ProfileRelation } from "@/types/profile";
 
 const NOTIF_KEY = "labbuddy_notifications";
@@ -24,7 +25,46 @@ function ProfileAvatar({ name, color, size = 36 }: { name: string; color: string
 export default function SettingsPage() {
   const { locale, setLocale, t } = useLanguage();
   const s = t.settingsPage;
+  const { user, supabase } = useAuth();
   const { profiles, activeProfile, setActive, addProfile, removeProfile } = useProfile();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    user?.user_metadata?.avatar_url ?? null
+  );
+  const [uploading, setUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("Please select an image file.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError("Image must be under 2 MB.");
+      return;
+    }
+    setAvatarError(null);
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = `${data.publicUrl}?t=${Date.now()}`;
+      await supabase.auth.updateUser({ data: { avatar_url: url } });
+      setAvatarUrl(url);
+    } catch {
+      setAvatarError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
@@ -113,6 +153,73 @@ export default function SettingsPage() {
           {s.subtitle}
         </p>
       </div>
+
+      {/* Account / Profile photo card */}
+      {user && (
+        <div className="mb-6 overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 shadow-[0_8px_20px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-5 px-6 py-5">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt="Profile photo"
+                  className="h-20 w-20 rounded-full object-cover shadow-md"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-deep-mint text-2xl font-black text-white shadow-md">
+                  {(user.user_metadata?.full_name ?? user.email ?? "LB")
+                    .split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-magic-orange text-white shadow-md hover:brightness-105 transition-all"
+                aria-label="Change photo"
+              >
+                {uploading ? (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <span className="material-symbols-outlined text-sm">photo_camera</span>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+
+            {/* Name + email */}
+            <div className="min-w-0">
+              <p className="truncate text-base font-black text-text-main">
+                {user.user_metadata?.full_name ?? "Your Account"}
+              </p>
+              {user.user_metadata?.username && (
+                <p className="text-sm font-semibold text-deep-mint">
+                  @{user.user_metadata.username}
+                </p>
+              )}
+              <p className="truncate text-xs font-medium text-text-main/40">{user.email}</p>
+              {avatarError && (
+                <p className="mt-1 text-[11px] font-bold text-rose-500">{avatarError}</p>
+              )}
+            </div>
+          </div>
+          <div className="border-t border-pale-mint px-6 py-3">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="text-xs font-bold text-deep-mint hover:underline disabled:opacity-40"
+            >
+              {uploading ? "Uploading…" : avatarUrl ? "Change profile photo" : "Add profile photo"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Settings list */}
       <div className="mb-6 overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 shadow-[0_8px_20px_rgba(0,0,0,0.04)] dark:bg-zinc-900/60 dark:border-zinc-800">

@@ -5,6 +5,7 @@ import TrendChart from "@/components/TrendChart";
 import HealthSnapshot from "@/components/HealthSnapshot";
 import { buildTrendSeries, type StoredResult } from "@/lib/storage";
 import { useHistory } from "@/lib/useHistory";
+import { useAuth } from "@/components/AuthProvider";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { Translations } from "@/lib/i18n";
 
@@ -65,20 +66,46 @@ const DEMO_HISTORY: StoredResult[] = [
 
 export default function DashboardOverview() {
   const { history, remove, isLoading } = useHistory();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const d = t.dashboard;
 
-  const isDemo = history.length === 0;
-  const displayHistory = isDemo ? DEMO_HISTORY : history;
-  const latest = displayHistory[0];
-  const score = healthScore(latest);
-  const { labels, series } = buildTrendSeries(displayHistory);
-  const badge = statusBadge(latest, d.statusBadge);
-  const recentUploads = displayHistory.slice(0, 4);
+  // Show demo only for guests — logged-in users with no history get empty state
+  const isDemo = !user && history.length === 0;
+  const isEmpty = !!user && history.length === 0;
 
   const handleDelete = (id: string) => remove(id);
 
   if (isLoading) return null;
+
+  if (isEmpty) return (
+    <div className="flex flex-col items-center justify-center gap-6 py-24 text-center">
+      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-pale-mint">
+        <span className="material-symbols-outlined text-5xl text-deep-mint" style={{ fontVariationSettings: "'FILL' 1" }}>
+          biotech
+        </span>
+      </div>
+      <div>
+        <h2 className="text-2xl font-black text-text-main">No analyses yet</h2>
+        <p className="mt-1 text-sm font-medium text-text-main/40">
+          Upload your first lab report to get started
+        </p>
+      </div>
+      <Link
+        href="/app"
+        className="flex items-center gap-2 rounded-2xl bg-magic-orange px-6 py-3 text-sm font-black text-white shadow-[0_4px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-0.5 active:shadow-none"
+      >
+        <span className="material-symbols-outlined text-base">add</span>
+        Run First Analysis
+      </Link>
+    </div>
+  );
+
+  const displayHistory = isDemo ? DEMO_HISTORY : history;
+  const latest = displayHistory[0];
+  const score = healthScore(latest);
+  const { labels, series } = buildTrendSeries(displayHistory);
+  const recentUploads = displayHistory.slice(0, 4);
 
   return (
     <div className="space-y-6">

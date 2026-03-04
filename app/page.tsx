@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 /* ─── Mock result cards shown in the hero ─── */
 const MOCK_VALUES = [
@@ -10,72 +11,22 @@ const MOCK_VALUES = [
   { name: "Glucose", result: "94", unit: "mg/dL", badge: "bg-deep-mint", icon: "sentiment_satisfied", label: "Great!" },
 ];
 
-/* ─── Bento features ─── */
-const FEATURES = [
-  {
-    icon: "auto_fix_high",
-    color: "text-magic-orange",
-    bg: "bg-magic-orange/10",
-    title: "Instant Interpretation",
-    desc: "Paste your report and get a plain-English explanation of every value in seconds — no waiting, no guessing.",
-    span: "sm:col-span-2 sm:row-span-2",
-    large: true,
-  },
-  {
-    icon: "shield_with_heart",
-    color: "text-deep-mint",
-    bg: "bg-deep-mint/10",
-    title: "Secure & Private",
-    desc: "Your data is never stored. Processing happens in the moment.",
-    span: "",
-    large: false,
-  },
-  {
-    icon: "language",
-    color: "text-buddy-blue",
-    bg: "bg-buddy-blue/10",
-    title: "3 Languages",
-    desc: "English, Español, Français — switch instantly in Settings.",
-    span: "",
-    large: false,
-  },
-  {
-    icon: "analytics",
-    color: "text-soft-purple",
-    bg: "bg-soft-purple/10",
-    title: "Trend Tracking",
-    desc: "Your last analysis is saved locally so you can revisit and compare over time.",
-    span: "sm:col-span-2",
-    large: false,
-  },
+const FEATURE_META = [
+  { icon: "auto_fix_high", color: "text-magic-orange", bg: "bg-magic-orange/10", span: "sm:col-span-2 sm:row-span-2", large: true },
+  { icon: "shield_with_heart", color: "text-deep-mint", bg: "bg-deep-mint/10", span: "", large: false },
+  { icon: "language", color: "text-buddy-blue", bg: "bg-buddy-blue/10", span: "", large: false },
+  { icon: "analytics", color: "text-soft-purple", bg: "bg-soft-purple/10", span: "sm:col-span-2", large: false },
 ];
 
-/* ─── How-it-works steps ─── */
-const STEPS = [
-  {
-    icon: "upload_file",
-    color: "text-magic-orange",
-    bg: "bg-magic-orange/10",
-    label: "Upload or Paste",
-    desc: "Drop a PDF or paste the text from any lab report.",
-  },
-  {
-    icon: "smart_toy",
-    color: "text-soft-purple",
-    bg: "bg-soft-purple/10",
-    label: "AI Analyzes",
-    desc: "Our AI reads every value and compares it to normal ranges.",
-  },
-  {
-    icon: "sentiment_satisfied",
-    color: "text-deep-mint",
-    bg: "bg-deep-mint/10",
-    label: "You Understand",
-    desc: "Get a friendly card for each result — no jargon, just clarity.",
-  },
+const STEP_META = [
+  { icon: "upload_file", color: "text-magic-orange", bg: "bg-magic-orange/10" },
+  { icon: "smart_toy", color: "text-soft-purple", bg: "bg-soft-purple/10" },
+  { icon: "sentiment_satisfied", color: "text-deep-mint", bg: "bg-deep-mint/10" },
 ];
 
 export default function LandingPage() {
+  const { t } = useLanguage();
+  const h = t.home;
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -183,9 +134,9 @@ export default function LandingPage() {
             </div>
 
             <h1 className="mb-4 text-5xl font-black leading-[1.1] tracking-tight text-text-main sm:text-6xl">
-              Your Health Story,{" "}
+              {h.heroTitleStart}{" "}
               <span className="relative inline-block text-magic-orange" style={{ animation: "word-pulse 2.5s ease-in-out infinite" }}>
-                Simplified!
+                {h.heroSimplified}
                 <svg
                   className="absolute -bottom-2 left-0 w-full"
                   viewBox="0 0 200 8"
@@ -291,32 +242,27 @@ export default function LandingPage() {
         </div>
 
         <div className="grid auto-rows-[180px] gap-4 sm:grid-cols-4">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className={`flex flex-col justify-between overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 p-7 shadow-[0_8px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_28px_56px_rgba(0,0,0,0.13)] hover:z-10 ${f.span}`}
-            >
-              <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${f.bg}`}>
-                <span className={`material-symbols-outlined text-2xl ${f.color}`}>{f.icon}</span>
+          {FEATURE_META.map((f, i) => {
+            const feat = h.features[i];
+            return (
+              <div
+                key={feat.title}
+                className={`flex flex-col justify-between overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/80 p-7 shadow-[0_8px_20px_rgba(0,0,0,0.04)] backdrop-blur-sm transition-all duration-200 hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_28px_56px_rgba(0,0,0,0.13)] hover:z-10 ${f.span}`}
+              >
+                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${f.bg}`}>
+                  <span className={`material-symbols-outlined text-2xl ${f.color}`}>{f.icon}</span>
+                </div>
+                <div>
+                  <h3 className={`font-black tracking-tight text-text-main ${f.large ? "mb-2 text-2xl" : "mb-1 text-lg"}`}>
+                    {feat.title}
+                  </h3>
+                  <p className={`font-medium leading-relaxed text-text-main/60 ${f.large ? "text-base" : "text-sm"}`}>
+                    {feat.desc}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3
-                  className={`font-black tracking-tight text-text-main ${
-                    f.large ? "mb-2 text-2xl" : "mb-1 text-lg"
-                  }`}
-                >
-                  {f.title}
-                </h3>
-                <p
-                  className={`font-medium leading-relaxed text-text-main/60 ${
-                    f.large ? "text-base" : "text-sm"
-                  }`}
-                >
-                  {f.desc}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -325,30 +271,32 @@ export default function LandingPage() {
         <div className="mb-12 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-deep-mint shadow-sm">
             <span className="material-symbols-outlined text-sm">route</span>
-            How it Works
+            {h.howLabel}
           </div>
           <h2 className="text-3xl font-black tracking-tight text-text-main">
-            From confusing numbers to clear answers
+            {h.howTitle}
           </h2>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-3">
-          {STEPS.map((step, i) => (
-            <div
-              key={step.label}
-              className="relative flex flex-col items-center rounded-[2.5rem] border-4 border-white bg-white/80 p-8 text-center shadow-[0_8px_20px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-3 hover:scale-[1.04] hover:shadow-[0_28px_56px_rgba(0,0,0,0.13)] hover:z-10"
-            >
-              {/* Step number bubble */}
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md">
-                <span className="text-sm font-black text-text-main">{i + 1}</span>
+          {STEP_META.map((step, i) => {
+            const s = h.steps[i];
+            return (
+              <div
+                key={s.label}
+                className="relative flex flex-col items-center rounded-[2.5rem] border-4 border-white bg-white/80 p-8 text-center shadow-[0_8px_20px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-3 hover:scale-[1.04] hover:shadow-[0_28px_56px_rgba(0,0,0,0.13)] hover:z-10"
+              >
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md">
+                  <span className="text-sm font-black text-text-main">{i + 1}</span>
+                </div>
+                <div className={`mb-5 mt-2 flex h-16 w-16 items-center justify-center rounded-[1.5rem] ${step.bg}`}>
+                  <span className={`material-symbols-outlined text-3xl ${step.color}`}>{step.icon}</span>
+                </div>
+                <h3 className="mb-2 text-xl font-black text-text-main">{s.label}</h3>
+                <p className="text-sm font-medium leading-relaxed text-text-main/60">{s.desc}</p>
               </div>
-              <div className={`mb-5 mt-2 flex h-16 w-16 items-center justify-center rounded-[1.5rem] ${step.bg}`}>
-                <span className={`material-symbols-outlined text-3xl ${step.color}`}>{step.icon}</span>
-              </div>
-              <h3 className="mb-2 text-xl font-black text-text-main">{step.label}</h3>
-              <p className="text-sm font-medium leading-relaxed text-text-main/60">{step.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -357,10 +305,10 @@ export default function LandingPage() {
         <div className="mb-10 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-magic-orange shadow-sm">
             <span className="material-symbols-outlined text-sm">sell</span>
-            Pricing
+            {h.pricingLabel}
           </div>
           <h2 className="text-3xl font-black tracking-tight text-text-main">
-            Simple and honest
+            {h.pricingTitle}
           </h2>
         </div>
 
@@ -368,11 +316,10 @@ export default function LandingPage() {
           <div className="relative overflow-hidden rounded-[2.5rem] border-4 border-white bg-white/90 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.08)]">
             <div className="group absolute right-6 top-6 cursor-default">
               <div className="rounded-full bg-deep-mint px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
-                Always Free
+                {h.alwaysFree}
               </div>
-              {/* Tooltip */}
               <div className="pointer-events-none absolute right-0 top-full mt-2 w-44 rounded-2xl bg-text-main px-3 py-2 text-center text-[11px] font-semibold leading-snug text-white opacity-0 shadow-lg transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1">
-                🎉 Free for now — we may introduce a Pro plan later
+                {h.freeForNow}
                 <div className="absolute -top-1.5 right-4 h-3 w-3 rotate-45 bg-text-main" />
               </div>
             </div>
@@ -383,26 +330,13 @@ export default function LandingPage() {
               </span>
             </div>
 
-            <p className="mb-1 text-4xl font-black text-text-main">$0</p>
-            <p className="mb-6 text-sm font-bold text-text-main/40">
-              No credit card · No account
-            </p>
+            <p className="mb-1 text-4xl font-black text-text-main">{h.price}</p>
+            <p className="mb-6 text-sm font-bold text-text-main/40">{h.priceNote}</p>
 
             <ul className="mb-8 space-y-3">
-              {[
-                "Unlimited lab report analyses",
-                "All value explanations in plain English",
-                "PDF & text upload",
-                "English, Español, Français",
-                "Last result saved to your device",
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-3 text-sm font-bold text-text-main/70"
-                >
-                  <span className="material-symbols-outlined text-base text-deep-mint">
-                    check_circle
-                  </span>
+              {h.priceFeatures.map((item) => (
+                <li key={item} className="flex items-center gap-3 text-sm font-bold text-text-main/70">
+                  <span className="material-symbols-outlined text-base text-deep-mint">check_circle</span>
                   {item}
                 </li>
               ))}
@@ -412,7 +346,7 @@ export default function LandingPage() {
               href="/app"
               className="flex h-14 w-full items-center justify-center gap-2 rounded-3xl bg-magic-orange text-lg font-black text-white shadow-[0_6px_0_0_#D15C2A] transition-all hover:brightness-105 active:translate-y-1 active:shadow-none"
             >
-              Start for Free
+              {h.priceCta}
               <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           </div>
@@ -431,17 +365,17 @@ export default function LandingPage() {
               favorite
             </span>
             <h2 className="mb-3 text-3xl font-black text-white">
-              Ready to understand your health?
+              {h.ctaTitle}
             </h2>
             <p className="mx-auto mb-8 max-w-md text-base font-medium text-white/60">
-              No sign-up, no credit card, no confusing medical jargon. Just answers.
+              {h.ctaSubtitle}
             </p>
             <Link
               href="/app"
               className="inline-flex h-16 items-center gap-3 rounded-3xl bg-magic-orange px-10 text-xl font-black text-white shadow-[0_8px_0_0_rgba(0,0,0,0.3)] transition-all hover:brightness-110 active:translate-y-1 active:shadow-none"
             >
               <span className="material-symbols-outlined text-2xl">document_scanner</span>
-              Scan Your First Report
+              {h.ctaButton}
             </Link>
           </div>
         </div>
