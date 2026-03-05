@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/LanguageProvider";
-import { LANGUAGES, type Locale } from "@/lib/i18n";
 import { useProfile } from "@/components/ProfileProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { AVATAR_COLORS, type ProfileRelation } from "@/types/profile";
@@ -23,7 +22,7 @@ function ProfileAvatar({ name, color, size = 36 }: { name: string; color: string
 }
 
 export default function SettingsPage() {
-  const { locale, setLocale, t } = useLanguage();
+  const { t } = useLanguage();
   const s = t.settingsPage;
   const { user, supabase } = useAuth();
   const { profiles, activeProfile, setActive, addProfile, removeProfile } = useProfile();
@@ -86,7 +85,6 @@ export default function SettingsPage() {
     }
     return false;
   });
-  const [showLangPicker, setShowLangPicker] = useState(false);
   const [notifBlocked, setNotifBlocked] = useState(() => {
     if (typeof window !== "undefined") {
       return "Notification" in window && Notification.permission === "denied";
@@ -130,12 +128,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleLocaleChange = (code: Locale) => {
-    setLocale(code);
-    setShowLangPicker(false);
-  };
-
-  const currentLang = LANGUAGES.find((l) => l.code === locale);
 
   return (
     <div className="mx-auto w-full max-w-md pt-4">
@@ -257,61 +249,6 @@ export default function SettingsPage() {
                 }`}
             />
           </button>
-        </div>
-
-        {/* Language row */}
-        <div className="border-b border-pale-mint dark:border-zinc-800">
-          <button
-            onClick={() => setShowLangPicker((v) => !v)}
-            className="flex w-full items-center justify-between px-6 py-5 text-left transition-colors hover:bg-pale-mint/30 dark:hover:bg-zinc-800/40"
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-pale-mint dark:bg-zinc-800">
-                <span className="material-symbols-outlined text-xl text-buddy-blue">
-                  language
-                </span>
-              </div>
-              <span className="text-base font-bold text-text-main dark:text-zinc-100">
-                {s.language}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-text-main/40 dark:text-zinc-500">
-              <span>{currentLang?.nativeLabel}</span>
-              <span
-                className={`material-symbols-outlined text-lg transition-transform duration-200 ${showLangPicker ? "rotate-90" : ""
-                  }`}
-              >
-                chevron_right
-              </span>
-            </div>
-          </button>
-
-          {/* Inline language picker */}
-          {showLangPicker && (
-            <div className="bg-pale-mint/20 dark:bg-zinc-800/30">
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleLocaleChange(lang.code)}
-                  className="flex w-full items-center justify-between px-8 py-4 transition-colors hover:bg-pale-mint/50 dark:hover:bg-zinc-700/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-base font-bold text-text-main dark:text-zinc-100">
-                      {lang.nativeLabel}
-                    </span>
-                    <span className="text-xs font-semibold text-text-main/40 dark:text-zinc-500">
-                      {lang.label}
-                    </span>
-                  </div>
-                  {locale === lang.code && (
-                    <span className="material-symbols-outlined text-lg text-deep-mint">
-                      check
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Data & Privacy row */}

@@ -8,7 +8,8 @@ import ExportPDFButton from "@/components/ExportPDFButton";
 import DoctorSummaryButton from "@/components/DoctorSummaryButton";
 
 export default function ResultsPage() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
+  const locale = "en";
   const r = t.resultsPage;
   const { history, remove, isLoading } = useHistory();
 
